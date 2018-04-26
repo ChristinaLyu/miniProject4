@@ -13,6 +13,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 library(mdsr)
 library(RMySQL)
+library(ggplot2)
 db <- dbConnect_scidb(dbname = "imdb")
 class(db)
 ```
@@ -70,12 +71,19 @@ order by avg_rating desc")
 company_all
 ```
 
+```{r warning = FALSE, message = FALSE}
+  ggplot(data=company_all, aes(x=avg_votes, y=avg_rating)) +
+  geom_bar(stat="identity")
+
+```
+
+
 
 ```{r warning = FALSE, message = FALSE}
 #the company that produced the best tv shows and their average rank and votes
 company_count <- 
   db %>%
-  dbGetQuery("SELECT name, count(*) as count, avg(mi1.info) as avg_votes, avg(mi2.info) as avg_rating
+  dbGetQuery("SELECT name, count(*) as number, avg(mi1.info) as avg_votes, avg(mi2.info) as avg_rating
 FROM title t
 JOIN movie_info_idx AS mi1 ON mi1.movie_id = t.id
 JOIN movie_info_idx AS mi2 ON mi2.movie_id = t.id
@@ -86,8 +94,14 @@ WHERE t.kind_id = 2
   AND mi2.info_type_id = 101
   AND mi1.info > 100000
 GROUP BY name
-order by count desc")
+order by number desc")
 company_count
+```
+```{r}
+num_rating <-
+  company_count %>%
+  select(number, avg_rating) 
+num_rating
 ```
 
 
