@@ -72,8 +72,8 @@ company_all
 ```
 
 ```{r warning = FALSE, message = FALSE}
-  ggplot(data=company_all, aes(x=avg_votes, y=avg_rating)) +
-  geom_bar(stat="identity")
+  ggplot(data=company_all, aes(x=count, y=avg_rating)) +
+  geom_point()
 
 ```
 
@@ -101,12 +101,15 @@ company_count
 num_rating <-
   company_count %>%
   select(number, avg_rating) 
-num_rating
+num_rating %>%
+  ggplot(aes(x = number, y = avg_rating)) + 
+  geom_point()
 ```
 
 
 
-
+https://www.ranker.com/list/television-production-companies/reference 
+Best TV show companies. We could analyze the productions and rates for those companies.
 
 
 
