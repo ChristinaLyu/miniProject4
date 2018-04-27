@@ -1,5 +1,5 @@
 ---
-title: "miniProject4"
+title: "Analysis of the different TV companies involved in the process of TV show making"
 author: "Christina Lyu & Sicong Li (using Github^[Github link: https://github.com/ChristinaLyu/miniProject3.git])"
 date: "4/26/2018"
 output: 
@@ -66,6 +66,7 @@ join company_name as n on n.id = c.company_id
 WHERE t.kind_id = 2
   AND mi1.info_type_id = 100
   AND mi2.info_type_id = 101
+  AND production_year = 2017
 GROUP BY name
 order by avg_rating desc")
 company_all
@@ -97,12 +98,15 @@ GROUP BY name
 order by number desc")
 company_count
 ```
-```{r}
+```{r warning = FALSE, message = FALSE}
 num_rating <-
   company_count %>%
   select(number, avg_rating) 
 num_rating %>%
   ggplot(aes(x = number, y = avg_rating)) + 
+  geom_point()
+company_all %>%
+  ggplot(aes(x = avg_votes, y = avg_rating)) + 
   geom_point()
 ```
 
@@ -112,8 +116,41 @@ https://www.ranker.com/list/television-production-companies/reference
 Best TV show companies. We could analyze the productions and rates for those companies.
 
 
+```{r warning = FALSE, message = FALSE}
+company_warner <- 
+  db %>%
+  dbGetQuery("SELECT name, count(*) as count, avg(mi1.info) as avg_votes, avg(mi2.info) as avg_rating
+FROM title t
+JOIN movie_info_idx AS mi1 ON mi1.movie_id = t.id
+JOIN movie_info_idx AS mi2 ON mi2.movie_id = t.id
+join movie_companies as c on c.movie_id = t.id
+join company_name as n on n.id = c.company_id
+WHERE t.kind_id = 2
+  AND mi1.info_type_id = 100
+  AND mi2.info_type_id = 101
+  AND name = 'Warner Home Video' 
+GROUP BY name
+order by avg_rating desc")
+company_warner
+```
 
 
+```{r warning = FALSE, message = FALSE}
+tv_company <- db %>%
+  dbGetQuery("SELECT title, count(distinct name) as count, avg(mi1.info) as avg_votes, avg(mi2.info) as avg_rating, production_year
+FROM title t
+JOIN movie_info_idx AS mi1 ON mi1.movie_id = t.id
+JOIN movie_info_idx AS mi2 ON mi2.movie_id = t.id
+join movie_companies as c on c.movie_id = t.id
+join company_name as n on n.id = c.company_id
+WHERE t.kind_id = 2
+  AND mi1.info_type_id = 100
+  AND mi2.info_type_id = 101
+  AND mi1.info > 100000
+GROUP BY title, production_year
+order by production_year desc, avg_rating desc")
+tv_company
+```
 
 
 
