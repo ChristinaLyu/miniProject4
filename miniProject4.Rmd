@@ -38,6 +38,7 @@ tv_rank
 ```
 
 ```{r warning = FALSE, message = FALSE}
+#all the TV shows
 tv_all <- 
   db %>%
   dbGetQuery("SELECT distinct t.id, t.title, t.production_year, n.name,
@@ -55,6 +56,7 @@ tv_all
 ```
 
 ```{r}
+#all companies with the number of TV shows they produced and the average votes and rating
 company_all <- 
   db %>%
   dbGetQuery("SELECT name, count(*) as count, avg(mi1.info) as avg_votes, avg(mi2.info) as avg_rating
@@ -99,6 +101,7 @@ order by number desc")
 company_count
 ```
 ```{r warning = FALSE, message = FALSE}
+#the graph with the number of TV shows a company produced or was involved in the production process, and the average rating it got
 num_rating <-
   company_count %>%
   select(number, avg_rating) 
@@ -117,6 +120,7 @@ Best TV show companies. We could analyze the productions and rates for those com
 
 
 ```{r warning = FALSE, message = FALSE}
+#the number of TV shows Warner produced
 company_warner <- 
   db %>%
   dbGetQuery("SELECT name, count(*) as count, avg(mi1.info) as avg_votes, avg(mi2.info) as avg_rating
@@ -136,6 +140,7 @@ company_warner
 
 
 ```{r warning = FALSE, message = FALSE}
+#TV shows and how many companies were involved in the production
 tv_company <- db %>%
   dbGetQuery("SELECT title, count(distinct name) as count, avg(mi1.info) as avg_votes, avg(mi2.info) as avg_rating, production_year
 FROM title t
