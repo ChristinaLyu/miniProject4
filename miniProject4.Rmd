@@ -102,15 +102,15 @@ company_count
 ```
 ```{r warning = FALSE, message = FALSE}
 #the graph with the number of TV shows a company produced or was involved in the production process, and the average rating it got
-num_rating <-
-  company_count %>%
-  select(number, avg_rating) 
-num_rating %>%
+
+company_count %>%
   ggplot(aes(x = number, y = avg_rating)) + 
-  geom_point()
+  geom_point() + 
+  geom_smooth()
 company_all %>%
   ggplot(aes(x = avg_votes, y = avg_rating)) + 
-  geom_point()
+  geom_point() + 
+  geom_smooth()
 ```
 
 
@@ -157,6 +157,15 @@ order by production_year desc, avg_rating desc")
 tv_company
 ```
 
+### Note the production year is different from the year the TV show is actually released. 
+
+```{r warning = FALSE, message = FALSE}
+  tv_company %>%
+  ggplot(aes(y = avg_rating, x = count, color = production_year)) + 
+  geom_jitter() + 
+  geom_smooth()
+
+```
 
 
 
