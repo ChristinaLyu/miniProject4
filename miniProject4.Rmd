@@ -76,7 +76,9 @@ company_all
 
 ```{r warning = FALSE, message = FALSE}
   ggplot(data=company_all, aes(x=count, y=avg_rating)) +
-  geom_point()
+  geom_point() + 
+  ggtitle("relationship between the number of shows a company produces and their average rating") + 
+  theme(plot.title = element_text(size = 10))
 
 ```
 
@@ -106,11 +108,16 @@ company_count
 company_count %>%
   ggplot(aes(x = number, y = avg_rating)) + 
   geom_point() + 
-  geom_smooth()
+  geom_smooth() + 
+  ggtitle("relationship between the number of shows a company produces and their average rating") + 
+  theme(plot.title = element_text(size = 10))
+
 company_all %>%
   ggplot(aes(x = avg_votes, y = avg_rating)) + 
   geom_point() + 
-  geom_smooth()
+  geom_smooth() + 
+  ggtitle("relationship between the average votes of a company on the shows and their average rating") + 
+  theme(plot.title = element_text(size = 10))
 ```
 
 
@@ -161,10 +168,13 @@ tv_company
 ### Note the production year is different from the year the TV show is actually released. 
 
 ```{r warning = FALSE, message = FALSE}
+
   tv_company %>%
   ggplot(aes(y = avg_rating, x = count, color = production_year)) + 
   geom_jitter() + 
-  geom_smooth()
+  geom_smooth() + 
+  ggtitle("relationship between the number of shows a company produces and their average rating") + 
+  theme(plot.title = element_text(size = 10))
 
 ```
 
