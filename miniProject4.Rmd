@@ -132,9 +132,10 @@ join company_name as n on n.id = c.company_id
 WHERE t.kind_id = 2
   AND mi1.info_type_id = 100
   AND mi2.info_type_id = 101
-  AND name = 'Warner Home Video' 
+  AND name in ('Warner Home Video', '3 Arts Entertainment', '20th Century Fox Television', '20th Century Fox Television', 'ABC Studios', 'ACME Communications', 'Alloy Entertainment', 'American Movie Classics (AMC)', 'Anonymous Content', 'Bad Robot', 'BBC America', 'Beacon Pictures', 'Bunim-Murray Productions', 'CBS Sports', 'Defined Productions', 'Dick Clark Productions', 'eOne Television', 'Eyeboogie, Inc.', 'Filmation', 'FremantleMedia', 'Global Broadcasting', 'LIN TV Corporation', 'Lions Gate Entertainment', 'Lorimar Television', 'Metro-Goldwyn-Mayer', 'Raycom Media', 'Shine America', 'Sony Pictures Television', '
+Tribune Entertainment', 'Universal Television', 'Walt Disney Television')
 GROUP BY name
-order by avg_rating desc")
+order by count desc")
 company_warner
 ```
 
@@ -166,4 +167,41 @@ tv_company
   geom_smooth()
 
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
