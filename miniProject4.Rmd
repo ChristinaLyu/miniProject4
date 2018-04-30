@@ -8,6 +8,8 @@ output:
     df_print: paged
     theme: cosmo
 ---
++1 for using efficient SQL queries (i.e. making use of an index column to speed things up, and including a comment indicating this)
+
 Problem Statement: In this project, we tried to understand the relationship between the average rating of TV shows and the show's production companies. To generate our analysis, we employed database: *imdb* stored on *scidb*.
 
 ```{r setup, message = FALSE, warning = FALSE}
@@ -15,6 +17,8 @@ knitr::opts_chunk$set(echo = TRUE)
 library(mdsr)
 library(RMySQL)
 library(ggplot2)
+library("htmltools")
+library("vembedr")
 db <- dbConnect_scidb(dbname = "imdb")
 class(db)
 ```
@@ -186,10 +190,12 @@ summary(mod1)
 ```
 
 
-https://youtu.be/pK_1ApX_31I
 A collection of some famous movie studio logo animations. This video is for promotional purposes only. We do not hold the copyright for the animations. All trademarks and copyrights are the property of their respective owners.
 
 
+```{r}
+embed_url("https://youtu.be/pK_1ApX_31I")
+```
 
 
 
