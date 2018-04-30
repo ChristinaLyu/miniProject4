@@ -42,6 +42,24 @@ tv_rank
 ```
 
 ```{r warning = FALSE, message = FALSE}
+#TV shows and how many companies were involved in the production
+tv_company <- db %>%
+  dbGetQuery("SELECT title, count(distinct name) as count, avg(mi1.info) as avg_votes, avg(mi2.info) as avg_rating, production_year
+FROM title t
+JOIN movie_info_idx AS mi1 ON mi1.movie_id = t.id
+JOIN movie_info_idx AS mi2 ON mi2.movie_id = t.id
+join movie_companies as c on c.movie_id = t.id
+join company_name as n on n.id = c.company_id
+WHERE t.kind_id = 2
+  AND mi1.info_type_id = 100
+  AND mi2.info_type_id = 101
+  AND mi1.info > 100000
+GROUP BY title, production_year
+order by production_year desc, avg_rating desc")
+tv_company
+```
+
+```{r warning = FALSE, message = FALSE}
 #all the TV shows
 tv_all <- 
   db %>%
@@ -85,8 +103,6 @@ company_all
   theme(plot.title = element_text(size = 10))
 
 ```
-
-
 
 ```{r warning = FALSE, message = FALSE}
 #the company that produced the best tv shows and their average rank and votes
@@ -151,24 +167,6 @@ company_warner
 ```
 
 
-```{r warning = FALSE, message = FALSE}
-#TV shows and how many companies were involved in the production
-tv_company <- db %>%
-  dbGetQuery("SELECT title, count(distinct name) as count, avg(mi1.info) as avg_votes, avg(mi2.info) as avg_rating, production_year
-FROM title t
-JOIN movie_info_idx AS mi1 ON mi1.movie_id = t.id
-JOIN movie_info_idx AS mi2 ON mi2.movie_id = t.id
-join movie_companies as c on c.movie_id = t.id
-join company_name as n on n.id = c.company_id
-WHERE t.kind_id = 2
-  AND mi1.info_type_id = 100
-  AND mi2.info_type_id = 101
-  AND mi1.info > 100000
-GROUP BY title, production_year
-order by production_year desc, avg_rating desc")
-tv_company
-```
-
 ### Note the production year is different from the year the TV show is actually released. 
 
 ```{r warning = FALSE, message = FALSE}
@@ -180,6 +178,8 @@ tv_company
   ggtitle("relationship between the number of shows a company produces and their average rating") + 
   theme(plot.title = element_text(size = 10))
 
+mod1 <- lm(avg_rating~count+count:avg_rating, data = tv_company)
+summary(mod1)
 ```
 
 
