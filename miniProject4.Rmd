@@ -9,6 +9,8 @@ output:
     theme: cosmo
 ---
 
+Problem Statement:
+
 ```{r setup, message = FALSE, warning = FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(mdsr)
@@ -17,6 +19,8 @@ library(ggplot2)
 db <- dbConnect_scidb(dbname = "imdb")
 class(db)
 ```
+
+On October 30, 2017, after Kevin Spacey, one of the main casts, was accused by actor Anthony Rapp of making a sexual advance toward him, Neflix announced that the sixth season would be the final season of House of Cards. Oringinal released in 2013, House of Cards is an American political thriller television series depicting ruthless pragmatism, manipulation, and power with an average rating of 8.9/10 on IMBD. Looking through the production details of House of Cards, we found that it was produced by Trigger Street Productions, which also produced well-known films like Fifty Shades of Grey and The Social Network. Therefore, we are interested in investigating the relationship between the rating of TV shows and the production companies.
 
 
 ```{r message = FALSE, warning = FALSE}
