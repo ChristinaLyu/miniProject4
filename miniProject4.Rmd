@@ -1,5 +1,5 @@
 ---
-title: "Analysis of the different TV companies involved in the process of TV show making"
+title: "Analysis of different TV companies involved in the process of TV show making"
 author: "Christina Lyu & Sicong Li (using Github^[Github link: https://github.com/ChristinaLyu/miniProject3.git])"
 date: "4/26/2018"
 output: 
@@ -8,8 +8,7 @@ output:
     df_print: paged
     theme: cosmo
 ---
-
-Problem Statement:
+Problem Statement: In this project, we tried to understand the relationship between the average rating of TV shows and the show's production companies. To generate our analysis, we employed database: *imdb* stored on *scidb*.
 
 ```{r setup, message = FALSE, warning = FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -21,7 +20,6 @@ class(db)
 ```
 
 On October 30, 2017, after Kevin Spacey, one of the main casts, was accused by actor Anthony Rapp of making a sexual advance toward him, Netflix announced that the sixth season would be the final season of House of Cards. Originally released in 2013, House of Cards is an American political thriller television series depicting ruthless pragmatism, manipulation, and power with an average rating of 8.9/10 on IMBD. Looking through the production details of House of Cards, we found that it was produced by Trigger Street Productions, which also produced well-known films like Fifty Shades of Grey and The Social Network. Therefore, we are interested in investigating the relationship between the rating of TV shows and the production companies.
-
 
 ```{r message = FALSE, warning = FALSE}
 #The TV shows and the production companies with highest reviews ranked by year
@@ -41,6 +39,8 @@ ORDER BY t.production_year desc;")
 tv_rank
 ```
 
+Firstly, we wanted to analyze ratings among TV shows with at least 100,000 votes on IMDB. We joined table *movie_info_index* twice so that we could both look at ratings and limit only TV shows with over 100,000 votes show up in our table. After a first glance, we figured out an interesting pattern that it seemed that all of the TV shows that are shown in our table have multiple production companies. To confirm our presumption, we made another table that counts the number of production companies of each TV shows in the previous table.
+
 ```{r warning = FALSE, message = FALSE}
 #TV shows and how many companies were involved in the production
 tv_company <- db %>%
@@ -58,6 +58,8 @@ GROUP BY title, production_year
 order by production_year desc, avg_rating desc")
 tv_company
 ```
+
+
 
 ```{r warning = FALSE, message = FALSE}
 #all the TV shows
@@ -97,7 +99,7 @@ company_all
 ```
 
 ```{r warning = FALSE, message = FALSE}
-  ggplot(data=company_all, aes(x=count, y=avg_rating)) +
+ggplot(data=company_all, aes(x=count, y=avg_rating)) +
   geom_point() + 
   ggtitle("relationship between the number of shows a company produces and their average rating") + 
   theme(plot.title = element_text(size = 10))
@@ -141,7 +143,6 @@ company_all %>%
 ```
 
 
-
 https://www.ranker.com/list/television-production-companies/reference 
 Best TV show companies. We could analyze the productions and rates for those companies.
 
@@ -171,14 +172,14 @@ company_warner
 
 ```{r warning = FALSE, message = FALSE}
 
-  tv_company %>%
+tv_company %>%
   ggplot(aes(y = avg_rating, x = count, color = production_year)) + 
   geom_jitter() + 
   geom_smooth() + 
   ggtitle("relationship between the number of shows a company produces and their average rating") + 
   theme(plot.title = element_text(size = 10))
 
-mod1 <- lm(avg_rating~count+count:avg_rating, data = tv_company)
+mod1 <- lm(avg_rating~count+count:production_year, data = tv_company)
 summary(mod1)
 ```
 
