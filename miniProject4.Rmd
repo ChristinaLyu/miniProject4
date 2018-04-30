@@ -39,7 +39,7 @@ ORDER BY t.production_year desc;")
 tv_rank
 ```
 
-Firstly, we wanted to analyze ratings among TV shows with at least 100,000 votes on IMDB. We joined table *movie_info_index* twice so that we could both look at ratings and limit only TV shows with over 100,000 votes show up in our table. After a first glance, we figured out an interesting pattern that it seemed that all of the TV shows that are shown in our table have multiple production companies. To confirm our presumption, we made another table that counts the number of production companies of each TV shows in the previous table.
+Firstly, we wanted to analyze ratings among TV shows with at least 100,000 votes on IMDB. We joined table *movie_info_index* twice so that we could both look at ratings and limit only TV shows with over 100,000 votes show up in our table. After a first glance, we figured out an interesting pattern that it seemed that all of the TV shows that are shown in our table have multiple production companies. Since our table is too large to confirm our hypothesis by just looking through it, we made another table that counts the number of production companies of each TV shows in the previous table.
 
 ```{r warning = FALSE, message = FALSE}
 #TV shows and how many companies were involved in the production
@@ -59,7 +59,9 @@ order by production_year desc, avg_rating desc")
 tv_company
 ```
 
+The result, not surprisely, is consistent with our guess that all of TV shows with over 100,000 votes are produced by multiple companies. Therefore, we are courious about why a TV show with over 100,000 votes, which indicates that many people have watched that show, gives credits to multiple companies.
 
+We came up with several possible explanations. Essentially, multiple roles are involved in the production of a TV shows. A distributor or a distribution company, for example, promises the network they will guarantee the episode and at times deficit finance the show's and is responsible for marketing the TV shows. In exchange, they own the rights to the show and can monetize it after its initial run. 
 
 ```{r warning = FALSE, message = FALSE}
 #all the TV shows
