@@ -10,7 +10,9 @@ output:
 ---
 +1 for using efficient SQL queries (i.e. making use of an index column to speed things up, and including a comment indicating this)
 
-Problem Statement: In this project, we tried to understand the relationship between the average rating of TV shows and the show's production companies. To generate our analysis, we employed database: *imdb* stored on *scidb*.
+Problem Statement: In this project, we tried to understand the relationship between the popularity of a TV show and the show's production companies. To generate our analysis, we employed the database *imdb* stored on *scidb*. We also included external resources to provide background information or explanations for our question.
+
+On October 30, 2017, after Kevin Spacey, one of the main casts, was accused by actor Anthony Rapp of making a sexual advance toward him, Netflix announced that the sixth season would be the final season of House of Cards. Originally released in 2013, House of Cards is an American political thriller television series depicting ruthless pragmatism, manipulation, and power with an average rating of 8.9/10 on IMBD. Looking through the production details of House of Cards, we found that it gives credits to multiple production companies, including Trigger Street Productions, which produced well-known films like Fifty Shades of Grey and The Social Network in previous years. Therefore, we are interested in investigating the relationship between the rating of TV shows and the number of production companies: do well-known TV shows are always produced by multiple production companies? If so, what are the underlying causes of this phenomenon?
 
 ```{r setup, message = FALSE, warning = FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -22,8 +24,6 @@ library("vembedr")
 db <- dbConnect_scidb(dbname = "imdb")
 class(db)
 ```
-
-On October 30, 2017, after Kevin Spacey, one of the main casts, was accused by actor Anthony Rapp of making a sexual advance toward him, Netflix announced that the sixth season would be the final season of House of Cards. Originally released in 2013, House of Cards is an American political thriller television series depicting ruthless pragmatism, manipulation, and power with an average rating of 8.9/10 on IMBD. Looking through the production details of House of Cards, we found that it was produced by Trigger Street Productions, which also produced well-known films like Fifty Shades of Grey and The Social Network. Therefore, we are interested in investigating the relationship between the rating of TV shows and the production companies.
 
 ```{r message = FALSE, warning = FALSE}
 #The TV shows and the production companies with highest reviews ranked by year
@@ -43,7 +43,7 @@ ORDER BY t.production_year desc;")
 tv_rank
 ```
 
-Firstly, we wanted to analyze ratings among TV shows with at least 100,000 votes on IMDB. We joined table *movie_info_index* twice so that we could both look at ratings and limit only TV shows with over 100,000 votes show up in our table. After a first glance, we figured out an interesting pattern that it seemed that all of the TV shows that are shown in our table have multiple production companies. Since our table is too large to confirm our hypothesis by just looking through it, we made another table that counts the number of production companies of each TV shows in the previous table.
+Firstly, we wanted to analyze ratings among TV shows with at least 100,000 votes on IMDB. We joined table *movie_info_index* twice so that we could both look at ratings and limit only TV shows with over 100,000 votes show up in our table. After a first glance, we figured out an interesting pattern that it seemed that all of the TV shows that are shown in our table have multiple production companies. Since our table is too large to confirm our guess by looking through it, we created another table that counts the number of production companies of TV shows with over 100,000 votes.
 
 ```{r warning = FALSE, message = FALSE}
 #TV shows and how many companies were involved in the production
@@ -65,7 +65,24 @@ tv_company
 
 The result, not surprisely, is consistent with our guess that all of TV shows with over 100,000 votes are produced by multiple companies. Therefore, we are courious about why a TV show with over 100,000 votes, which indicates that many people have watched that show, gives credits to multiple companies.
 
-We came up with several possible explanations. Essentially, multiple roles are involved in the production of a TV shows. A distributor or a distribution company, for example, promises the network they will guarantee the episode and at times deficit finance the show's and is responsible for marketing the TV shows. In exchange, they own the rights to the show and can monetize it after its initial run. 
+We came up with several possible explanations. Essentially, multiple roles are involved in the production of a TV shows. A distributor or a distribution company, for example, promises the network they will guarantee the episode and at times deficit finance the show's and is responsible for marketing the TV shows. In exchange, they own the rights to the show and can monetize it after its initial run.
+
+```{r warning = FALSE, message = FALSE}
+#TV shows and how many companies were involved in the production
+tv_lesspop <- db %>%
+  dbGetQuery("SELECT title, count(distinct name) as count, avg(mi1.info) as avg_votes, production_year
+FROM title t
+JOIN movie_info_idx AS mi1 ON mi1.movie_id = t.id
+join movie_companies as c on c.movie_id = t.id
+join company_name as n on n.id = c.company_id
+WHERE t.kind_id = 2
+  AND mi1.info_type_id = 100
+  AND mi1.info < 100
+GROUP BY title, production_year
+order by production_year desc")
+```
+
+
 
 ```{r warning = FALSE, message = FALSE}
 #all the TV shows
