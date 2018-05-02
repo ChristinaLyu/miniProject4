@@ -107,7 +107,7 @@ ORDER by avg_rating desc")
 company_warner
 ```
 
-
+However, there are also disvantages of the way multiple production companies works. One is that 
 
 
 ```{r warning = FALSE, message = FALSE}
