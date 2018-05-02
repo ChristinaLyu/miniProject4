@@ -97,6 +97,7 @@ The result verifies our idea as most of the TV shows has only 1 or 2 production 
 
 ```{r warning = FALSE, message = FALSE}
 #the number of TV shows 30 largest companies produced
+#The movie_id column in movie_info_idx table is indexed based on the indexes of idx_mid
 company_warner <- 
   db %>%
   dbGetQuery("SELECT name, count(*) as companies, avg(mi1.info) as avg_votes, avg(mi2.info) as avg_rating
@@ -117,7 +118,7 @@ company_warner
 
 However, there are also disadvantages of the way multiple production companies works. One is that the quality of a show may be affected. An independent TV show is usually low in reward, but it’s also low in risk. As a result, the guiding principle is the creation of quality work, with the hope that commercial and critical success will follow. But in the high-stakes game of millions of dollar investment, TV shows with multiple large production companies involved, the principal aim is return on investment, which means playing it as safe as possible (in both what’s made and how it’s executed), appealing to the widest possible audience, and thus protecting everyone’s investment. 
 
-We generated a table of the top 30 television production companies (data provided: https://www.ranker.com/list/television-production-companies/reference) and the average rating of the TV shows they produced. We figured that the rankings of the best 2 companies (3 Arts Entertainment and 20th Century Fox Television) are all in the middle, indicating that audience may not be satisfied with TV shows produced with the safest way for companies.
+We generated a table of the top 30 television production companies^[data provided: https://www.ranker.com/list/television-production-companies/reference] and the average rating of the TV shows they produced. We figured that the rankings of the best 2 companies (3 Arts Entertainment and 20th Century Fox Television) are all in the middle, indicating that audience may not be satisfied with TV shows produced with the safest way for companies.
 
 
 ```{r warning = FALSE, message = FALSE}
@@ -135,7 +136,9 @@ WHERE t.kind_id = 2
   AND mi1.info_type_id = 100
   AND mi2.info_type_id = 101
 ORDER BY t.production_year desc;")
-tv_all
+
+tv_all 
+
 ```
 
 ```{r warning = FALSE, message = FALSE}
@@ -150,8 +153,7 @@ JOIN movie_companies as c on c.movie_id = t.id
 JOIN company_name as n on n.id = c.company_id
 WHERE t.kind_id = 2
   AND mi1.info_type_id = 100
-  AND mi2.info_type_id = 101
-  AND production_year = 2017
+  AND mi2.info_type_id = 101  
 GROUP BY name
 ORDER by avg_rating desc")
 company_all
@@ -184,6 +186,19 @@ ORDER by number desc")
 company_count
 ```
 
+```{r warning = FALSE, message = FALSE}
+#TV shows and how many companies were involved in the production for shows that are not popular
+tv <- db %>%
+  dbGetQuery("SELECT title, count(distinct name) as companies, avg(mi2.info) as avg_rating, production_year
+FROM title t
+JOIN movie_info_idx as mi2 ON mi2.movie_id = t.id
+JOIN movie_companies as c on c.movie_id = t.id
+JOIN company_name as n on n.id = c.company_id
+WHERE t.kind_id = 2
+  AND mi2.info_type_id = 101
+GROUP BY title")
+tv
+```
 
 ```{r warning = FALSE, message = FALSE}
 #the graph with the number of TV shows a company produced or was involved in the production process, and the average rating it got
@@ -213,9 +228,24 @@ Best TV show companies. We could analyze the productions and rates for those com
 tv_company %>%
   ggplot(aes(y = avg_rating, x = companies, color = production_year)) + 
   geom_jitter() + 
+  scale_colour_gradientn(colours = terrain.colors(10)) + 
   geom_smooth() + 
   ggtitle("relationship between the number of shows a company produces and their average rating") + 
   theme(plot.title = element_text(size = 10))
+
+tv %>%
+  ggplot(aes(y = avg_rating, x = companies, color = production_year)) + 
+  geom_jitter() + 
+  scale_colour_gradientn(colours = terrain.colors(10)) + 
+  geom_smooth() + 
+  ggtitle("relationship between the number of shows a company produces and their average rating") + 
+  theme(plot.title = element_text(size = 10))
+
+tv %>%
+  mutate(level = ifelse(avg_rating > 7.5, "high", ifelse(avg_rating < 5, "low", "median"))) %>%
+  ggplot(aes(x = companies, fill = level)) + 
+  geom_histogram() + 
+  coord_cartesian(xlim=c(0, 50))
 
 mod1 <- lm(avg_rating~companies+companies:production_year, data = tv_company)
 summary(mod1)
