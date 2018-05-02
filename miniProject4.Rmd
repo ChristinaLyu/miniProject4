@@ -226,7 +226,8 @@ tv_company %>%
   scale_colour_gradientn(colours = terrain.colors(10)) + 
   geom_smooth() + 
   ggtitle("relationship between the number of shows a company produces and their average rating") + 
-  theme(plot.title = element_text(size = 10))
+  theme(plot.title = element_text(size = 10)) + 
+  geom_smooth(method = "lm")
 
 tv %>%
   ggplot(aes(y = avg_rating, x = companies, color = production_year)) + 
@@ -241,9 +242,14 @@ tv %>%
   ggplot(aes(x = companies, fill = level)) + 
   geom_histogram() + 
   coord_cartesian(xlim=c(0, 50))
+```
 
+
+```{r}
 mod1 <- lm(avg_rating~companies+companies:production_year, data = tv_company)
 summary(mod1)
+mod2 <- lm(avg_rating~companies, data = tv_company)
+summary(mod2)
 ```
 
 To get a better understanding, we created several graphs to show patterns. For the first graph, we found that for TV shows with more than 100,000 votes in IMDb, at least three companies are involved in the production. Ratings of shows that were produced around 1990 are all above 8.5. One possible reason is that people don't have much motivation to check an old TV show without high quanilty. 
