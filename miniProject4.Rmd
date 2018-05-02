@@ -51,22 +51,24 @@ tv_company <- db %>%
 FROM title t
 JOIN movie_info_idx AS mi1 ON mi1.movie_id = t.id
 JOIN movie_info_idx AS mi2 ON mi2.movie_id = t.id
-join movie_companies as c on c.movie_id = t.id
-join company_name as n on n.id = c.company_id
+JOIN movie_companies as c on c.movie_id = t.id
+JOIN company_name as n on n.id = c.company_id
 WHERE t.kind_id = 2
   AND mi1.info_type_id = 100
   AND mi2.info_type_id = 101
   AND mi1.info > 100000
 GROUP BY title, production_year
-order by production_year desc, avg_rating desc")
+ORDER by production_year desc, avg_rating desc")
 tv_company
 ```
 
-The result, not surprisingly, is consistent with our guess that all of TV shows with over 100,000 votes are produced by multiple companies. Therefore, we are curious about why a TV show with over 100,000 votes, which indicates that many people have watched that show, gives credits to multiple companies.
+The result, not surprisingly, is consistent with our guess that all of the TV shows with over 100,000 votes are produced by multiple companies. Therefore, we are curious about why a TV show with over 100,000 votes, which indicates that many people have watched that show, gives credits to multiple companies.
 
-We came up with several possible explanations. Essentially, multiple roles are involved in the production of a TV shows. A distributor or a distribution company, for example, promises the network they will guarantee the episode and at times deficit finance the show's and is responsible for marketing the TV shows. In exchange, they own the rights to the show and can monetize it after its initial run. Distributors can be in different countries, and even be different in the same country but for different platform. Take 13 Reasons Why as an example, while Netflix is the distributor of video and on internet in the US in 2017, Viacom owns the right to all media now. A TV show also gives credit to its IP owner: toys companies such as Mattel and Lego, Comicbooks companies such as Marvel. As the TV show is collecting loyalties, it needs to give a logo to those companies.
+We came up with several possible explanations. Essentially, multiple roles are involved in the production of a TV shows. A distributor or a distribution company, for example, promises the network they will guarantee the episode and at times deficit finance the show's and is responsible for marketing the TV shows. In exchange, they own the rights to the show and can monetize it after its initial run. Distributors can be in different countries, and even be different in the same country but for different platform. Take 13 Reasons Why as an example, while Netflix is the distributor of video and on the internet in the US in 2017, Viacom owns the right to all media now. A TV show also gives credit to its IP owner: toys companies such as Mattel and Lego, Comicbooks companies such as Marvel. As the TV show is collecting loyalties, it needs to give a logo to those companies.
 
-Secondly, production companies 
+Secondly, companies may choose to collaborate with other firms to share risks. As nobody wants to take a huge gamble by themselves, instead of making big bets on high-budget franchise plays, production companies collaborate with other companies to share the risk. A smaller indie production company may have a good idea, but it needs to seek for financial support to put its idea on screen. In this way, the risk of losses is distributed to several companies, and median to small production companies won't worry that a single investment failure will lead to bankrupt.
+
+Another reason for this phenomena is that many producers, stars, and writers have their own company through which they create and make a show. An example will be Brad Pitt and his production company, Plan-B Entertainment, whcih won the 86th a best-picture Oscar for *12 Years a Slave*. For those people, they won't sign on to a show unless their production company is hired. That's a way to shield some of their payments from taxation, as the money is technically going to the production company, not themselves.
 
 ```{r warning = FALSE, message = FALSE}
 #TV shows and how many companies were involved in the production for shows that are not popular
@@ -74,14 +76,38 @@ tv_lesspop <- db %>%
   dbGetQuery("SELECT title, count(distinct name) as count, avg(mi1.info) as avg_votes, production_year
 FROM title t
 JOIN movie_info_idx AS mi1 ON mi1.movie_id = t.id
-join movie_companies as c on c.movie_id = t.id
-join company_name as n on n.id = c.company_id
+JOIN movie_companies as c on c.movie_id = t.id
+JOIN company_name as n on n.id = c.company_id
 WHERE t.kind_id = 2
   AND mi1.info_type_id = 100
   AND mi1.info < 100
 GROUP BY title, production_year
-order by production_year desc")
+ORDER by production_year desc")
 ```
+
+To confirm our guess, we also created a table that counts the number of TV shows that are less popular (have less thatn 100 votes in IMDB) and the number of production campanies that are given credit to.
+
+```{r warning = FALSE, message = FALSE}
+#the number of TV shows Warner produced
+company_warner <- 
+  db %>%
+  dbGetQuery("SELECT name, count(*) as count, avg(mi1.info) as avg_votes, avg(mi2.info) as avg_rating
+FROM title t
+JOIN movie_info_idx AS mi1 ON mi1.movie_id = t.id
+JOIN movie_info_idx AS mi2 ON mi2.movie_id = t.id
+JOIN movie_companies as c on c.movie_id = t.id
+JOIN company_name as n on n.id = c.company_id
+WHERE t.kind_id = 2
+  AND mi1.info_type_id = 100
+  AND mi2.info_type_id = 101
+  AND name in ('Warner Home Video', '3 Arts Entertainment', '20th Century Fox Television', '20th Century Fox Television', 'ABC Studios', 'ACME Communications', 'Alloy Entertainment', 'American Movie Classics (AMC)', 'Anonymous Content', 'Bad Robot', 'BBC America', 'Beacon Pictures', 'Bunim-Murray Productions', 'CBS Sports', 'Defined Productions', 'Dick Clark Productions', 'eOne Television', 'Eyeboogie, Inc.', 'Filmation', 'FremantleMedia', 'Global Broadcasting', 'LIN TV Corporation', 'Lions Gate Entertainment', 'Lorimar Television', 'Metro-Goldwyn-Mayer', 'Raycom Media', 'Shine America', 'Sony Pictures Television', '
+Tribune Entertainment', 'Universal Television', 'Walt Disney Television')
+GROUP BY name
+ORDER by avg_rating desc")
+company_warner
+```
+
+
 
 
 ```{r warning = FALSE, message = FALSE}
@@ -93,8 +119,8 @@ tv_all <-
 FROM title t
 JOIN movie_info_idx AS mi1 ON mi1.movie_id = t.id
 JOIN movie_info_idx AS mi2 ON mi2.movie_id = t.id
-join movie_companies as c on c.movie_id = t.id
-join company_name as n on n.id = c.company_id
+JOIN movie_companies as c on c.movie_id = t.id
+JOIN company_name as n on n.id = c.company_id
 WHERE t.kind_id = 2
   AND mi1.info_type_id = 100
   AND mi2.info_type_id = 101
@@ -110,14 +136,14 @@ company_all <-
 FROM title t
 JOIN movie_info_idx AS mi1 ON mi1.movie_id = t.id
 JOIN movie_info_idx AS mi2 ON mi2.movie_id = t.id
-join movie_companies as c on c.movie_id = t.id
-join company_name as n on n.id = c.company_id
+JOIN movie_companies as c on c.movie_id = t.id
+JOIN company_name as n on n.id = c.company_id
 WHERE t.kind_id = 2
   AND mi1.info_type_id = 100
   AND mi2.info_type_id = 101
   AND production_year = 2017
 GROUP BY name
-order by avg_rating desc")
+ORDER by avg_rating desc")
 company_all
 ```
 
@@ -137,16 +163,18 @@ company_count <-
 FROM title t
 JOIN movie_info_idx AS mi1 ON mi1.movie_id = t.id
 JOIN movie_info_idx AS mi2 ON mi2.movie_id = t.id
-join movie_companies as c on c.movie_id = t.id
-join company_name as n on n.id = c.company_id
+JOIN movie_companies as c on c.movie_id = t.id
+JOIN company_name as n on n.id = c.company_id
 WHERE t.kind_id = 2
   AND mi1.info_type_id = 100
   AND mi2.info_type_id = 101
   AND mi1.info > 100000
 GROUP BY name
-order by number desc")
+ORDER by number desc")
 company_count
 ```
+
+
 ```{r warning = FALSE, message = FALSE}
 #the graph with the number of TV shows a company produced or was involved in the production process, and the average rating it got
 
@@ -171,29 +199,6 @@ Best TV show companies. We could analyze the productions and rates for those com
 
 
 ```{r warning = FALSE, message = FALSE}
-#the number of TV shows Warner produced
-company_warner <- 
-  db %>%
-  dbGetQuery("SELECT name, count(*) as count, avg(mi1.info) as avg_votes, avg(mi2.info) as avg_rating
-FROM title t
-JOIN movie_info_idx AS mi1 ON mi1.movie_id = t.id
-JOIN movie_info_idx AS mi2 ON mi2.movie_id = t.id
-join movie_companies as c on c.movie_id = t.id
-join company_name as n on n.id = c.company_id
-WHERE t.kind_id = 2
-  AND mi1.info_type_id = 100
-  AND mi2.info_type_id = 101
-  AND name in ('Warner Home Video', '3 Arts Entertainment', '20th Century Fox Television', '20th Century Fox Television', 'ABC Studios', 'ACME Communications', 'Alloy Entertainment', 'American Movie Classics (AMC)', 'Anonymous Content', 'Bad Robot', 'BBC America', 'Beacon Pictures', 'Bunim-Murray Productions', 'CBS Sports', 'Defined Productions', 'Dick Clark Productions', 'eOne Television', 'Eyeboogie, Inc.', 'Filmation', 'FremantleMedia', 'Global Broadcasting', 'LIN TV Corporation', 'Lions Gate Entertainment', 'Lorimar Television', 'Metro-Goldwyn-Mayer', 'Raycom Media', 'Shine America', 'Sony Pictures Television', '
-Tribune Entertainment', 'Universal Television', 'Walt Disney Television')
-GROUP BY name
-order by count desc")
-company_warner
-```
-
-
-### Note the production year is different from the year the TV show is actually released. 
-
-```{r warning = FALSE, message = FALSE}
 
 tv_company %>%
   ggplot(aes(y = avg_rating, x = count, color = production_year)) + 
@@ -206,13 +211,11 @@ mod1 <- lm(avg_rating~count+count:production_year, data = tv_company)
 summary(mod1)
 ```
 
-
-A collection of some famous movie studio logo animations. This video is for promotional purposes only. We do not hold the copyright for the animations. All trademarks and copyrights are the property of their respective owners.
-
-
+Here is a video of logos of production companies. See how many you can recognize:
 ```{r}
 embed_url("https://youtu.be/pK_1ApX_31I")
 ```
+
 
 
 
