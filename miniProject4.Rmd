@@ -24,7 +24,7 @@ class(db)
 
 On October 30, 2017, after Kevin Spacey, one of the main casts, was accused of making a sexual advance, Netflix announced that the sixth season would be the final season of House of Cards. Originally released in 2013, House of Cards is an American political thriller television series with an average rating of 8.9/10 on IMBD. Although it is marked as Netflix original series, after looking through the production details of it, we found that it gives credits to multiple production companies, including Trigger Street Productions, which produced well-known films like Fifty Shades of Grey and The Social Network in previous years. 
 
-Here is a video^[Youtube video link: https://youtu.be/pK_1ApX_31I] of common movie starters which would give credits to multiple companies.
+Here is a video^[Youtube video link: https://youtu.be/pK_1ApX_31I] of common movie starters which give credits to the companies involved in production.
 
 ```{r}
 embed_url("https://youtu.be/pK_1ApX_31I")
@@ -150,13 +150,13 @@ top <-
   tv %>%
   mutate(rank = ifelse(avg_rating > 9, 1, 0)) %>%
   group_by(companies) %>%
-  summarise(percent = sum(rank == 1) / n()) %>%
+  summarise(proportion_top = sum(rank == 1) / n()) %>%
   filter(companies < 15)
 
 top 
 
 top %>%
-  ggplot(aes(x = companies, y = percent)) + 
+  ggplot(aes(x = companies, y = proportion_top)) + 
   geom_bar(stat = "identity")
 ```
 
