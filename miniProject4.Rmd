@@ -107,7 +107,7 @@ WHERE t.kind_id = 2
 GROUP BY title")
 ```
 
-```{r warning = FALSE, message = FALSE}
+```{r warning = FALSE, message = FALSE, fig.width=8, fig.height=6}
 tv_level <- 
   tv %>%
   mutate(level = ifelse(avg_rating > 7.5, "high", ifelse(avg_rating < 5, "low", "median")))
@@ -135,7 +135,7 @@ tv_level %>%
 
 Secondly, we created several histograms to interpret the distribution of the number of companies involved in the production of a TV show. We plotted three levels of rating on the graph. Those with more than 7.5 scores are in the level of high, 5-7.5 are in the median, and smaller than 5 are in the low level. We found that over 80 percent of TV shows are produced by no more than 5 companies, but there are also around 10% of them have very low rating. For those with more than 5 companies involved, we can see that the percentage of low rating movies is gradually reduced as the number increases, and becomes unnoticable at the end, as companies will be more cautious about selecting scripts and choosing actors. Also music, special effects, and sounds can be improved a lot with more companies involved in, providing larger budgets.  
 
-```{r warning = FALSE, message = FALSE}
+```{r warning = FALSE, message = FALSE, fig.width=8, fig.height=6}
 #the percent of top tv shows
 top <- 
   tv %>%
