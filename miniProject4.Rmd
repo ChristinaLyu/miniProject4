@@ -38,7 +38,7 @@ embed_url("https://youtu.be/pK_1ApX_31I")
 #used four tables in imdb: movie_info_idx, title, movie_company, company_name
 #used index column by using movie_info_idx
 tv_rank <- db %>%
-  dbGetQuery("SELECT distinct t.id, t.title, t.production_year, n.name,
+  dbGetQuery("SELECT distinct t.id, t.title, n.name,
   mi1.info AS votes, mi2.info AS rating
 FROM title t
 JOIN movie_info_idx AS mi1 ON mi1.movie_id = t.id
@@ -61,7 +61,7 @@ Firstly, we wanted to analyze ratings among popular TV shows (having over 100,00
 #used four tables: title, movie_info_idx, movie_companies, company_name
 #used index column: movie_info_index, and movie_company.company_id column to join it with company_name.id
 tv_company <- db %>%
-  dbGetQuery("SELECT title, count(distinct name) as companies, avg(mi1.info) as avg_votes, avg(mi2.info) as avg_rating, production_year
+  dbGetQuery("SELECT title, count(distinct name) as companies, avg(mi1.info) as avg_votes, avg(mi2.info) as avg_rating
 FROM title t
 JOIN movie_info_idx AS mi1 ON mi1.movie_id = t.id
 JOIN movie_info_idx AS mi2 ON mi2.movie_id = t.id
@@ -89,7 +89,7 @@ To confirm our guess, we also created a table that counts the number of TV shows
 ```{r warning = FALSE, message = FALSE}
 #TV shows and how many companies were involved in the production for shows that are not popular
 tv_lesspop <- db %>%
-  dbGetQuery("SELECT title, count(distinct name) as companies, avg(mi1.info) as avg_votes, production_year
+  dbGetQuery("SELECT title, count(distinct name) as companies, avg(mi1.info) as avg_votes
 FROM title t
 JOIN movie_info_idx AS mi1 ON mi1.movie_id = t.id
 JOIN movie_companies as c on c.movie_id = t.id
@@ -143,7 +143,7 @@ tv_level %>%
   ggtitle("ZoomIn: #TV Shows vs #Companies > 15 with Rating Level")
 ```
 
-Secondly, we created several histograms to interpret the distribution of the number of companies involved in the production of a TV show. We plotted three levels of rating on the graph. Those with more than 7.5 scores are the level of *high*, 5-7.5 are *median*, and smaller than 5 are *low*. We found that over 80 percent of TV shows are produced by no more than 5 companies, but there are also around 10% of them have very low rating. For those with more than 5 companies involved, we can see that the percentage of low rating movies is gradually reduced as the number increases, and becomes unnoticable at the end, as companies will be more cautious about selecting scripts and choosing actors to avoid low quality tv shows. Also music, special effects, and sounds can be improved a lot with more companies involved in, providing larger budgets.  
+Secondly, we created several histograms to interpret the distribution of the number of companies involved in the production of a TV show. We plotted three levels of rating on the graph. Those with more than 7.5 scores are the level of *high*, 5-7.5 are *median*, and smaller than 5 are *low*. We found that over 80 percent of TV shows are produced by no more than 5 companies, but there are also around 10% of them have very low rating. For those with more than 5 companies involved in the ZoomIn graphs, we can see that the percentage of low rating movies is gradually reduced as the number increases, and becomes unnoticable at the end, as companies will be more cautious about selecting scripts and choosing actors to avoid low quality tv shows. Also music, special effects, and sounds can be improved a lot with more companies involved in, providing larger budgets.  
 
 ```{r warning = FALSE, message = FALSE, fig.width=8, fig.height=6}
 #the percent of top tv shows
@@ -151,12 +151,12 @@ top <-
   tv %>%
   mutate(rank = ifelse(avg_rating > 9, 1, 0)) %>%
   group_by(companies) %>%
-  summarise(percent = sum(rank == 1) / n())
+  summarise(percent = sum(rank == 1) / n()) %>%
+  filter(companies < 15)
 
 top 
 
 top %>%
-  filter(companies < 15) %>%
   ggplot(aes(x = companies, y = percent)) + 
   geom_bar(stat = "identity")
 ```
@@ -165,8 +165,4 @@ However, there are also disadvantages of the way multiple production companies w
 
 As we all know, an independent TV show is usually low in reward, but it’s also low in risk. As a result, the guiding principle is the creation of quality work, with the hope that commercial and critical success will follow. But in the high-stakes game of millions of dollar investment, the principal aim is the return on investment, which means playing it as safe as possible (in both what’s made and how it’s executed), appealing to the widest possible audience, and thus protecting everyone’s investment. 
 
-Here is a video^[Youtube video link: https://youtu.be/pK_1ApX_31I] of logos of production companies. See how many you can recognize:
-```{r}
-embed_url("https://youtu.be/pK_1ApX_31I")
-```
-
+Therefore, it's custom that multiple companies collaborate in the TV show production, but sometimes bold, single company makes the best show.
