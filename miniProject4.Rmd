@@ -30,7 +30,6 @@ Here is a video^[Youtube video link: https://youtu.be/pK_1ApX_31I] of common mov
 embed_url("https://youtu.be/pK_1ApX_31I")
 ```
 
-
 [Problem Statement] Therefore, we are interested in investigating the relationship between the popularity of TV shows and the number of its production companies: are well-known TV shows always produced by multiple production companies and why.
 
 ```{r message = FALSE, warning = FALSE}
@@ -164,5 +163,4 @@ top %>%
 However, there are also disadvantages of the way multiple production companies works. To back up this argument, we created a table of top TV shows with average ratings greater than 9. From our previous graph, we know that 90 percent of the tv shows include no more than ten companies in the production. We then calculated the percentage of top tv shows for each possible number of involved companies and found that the percentage of top TV shows produced by collaborating companies decreases as the number of companies involved increases. The percentage of top tv shows produced by a single company is larger than the percentage of tv shows produced by multiple companies together.
 
 As we all know, an independent TV show is usually low in reward, but it’s also low in risk. As a result, the guiding principle is the creation of quality work, with the hope that commercial and critical success will follow. But in the high-stakes game of millions of dollar investment, the principal aim is the return on investment, which means playing it as safe as possible (in both what’s made and how it’s executed), appealing to the widest possible audience, and thus protecting everyone’s investment. 
-
 Therefore, it's custom that multiple companies collaborate in the TV show production, but sometimes bold, single company makes the best show.
