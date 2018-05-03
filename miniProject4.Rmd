@@ -8,18 +8,17 @@ output:
     df_print: paged
     theme: cosmo
 ---
-Problem Statement: In this project, we tried to understand the relationship between the popularity of a TV show and the number of that show's production companies. To generate our analysis, we employed the database *imdb* stored on *scidb*. We also included external resources to provide background information or explanations for our question.
+On October 30, 2017, after Kevin Spacey, one of the main casts, was accused by actor Anthony Rapp of making a sexual advance toward him, Netflix announced that the sixth season would be the final season of House of Cards. Originally released in 2013, House of Cards is an American political thriller television series with an average rating of 8.9/10 on IMBD. Although it is marked as Netflix original series, after looking through the production details of it, we found that it gives credits to multiple production companies, including Trigger Street Productions, which produced well-known films like Fifty Shades of Grey and The Social Network in previous years. [Problem Statement] Therefore, we are interested in investigating the relationship between the popularity of TV shows and the number of its production companies: do well-known TV shows are always produced by multiple production companies? If so, what are the underlying explanations for this phenomenon?
 
-On October 30, 2017, after Kevin Spacey, one of the main casts, was accused by actor Anthony Rapp of making a sexual advance toward him, Netflix announced that the sixth season would be the final season of House of Cards. Originally released in 2013, House of Cards is an American political thriller television series with an average rating of 8.9/10 on IMBD. Although it is marked as Netflix original series, after looking through the production details of it, we found that it gives credits to multiple production companies, including Trigger Street Productions, which produced well-known films like Fifty Shades of Grey and The Social Network in previous years. Therefore, we are interested in investigating the relationship between the popularity of TV shows and the number of its production companies: do well-known TV shows are always produced by multiple production companies? If so, what are the underlying explanations for this phenomenon?
-
-```{r setup, message = FALSE, warning = FALSE, result = "hide"}
+```{r setup, message = FALSE, warning = FALSE, echo = FALSE}
 #setup chunk, running libraries and getting data
 knitr::opts_chunk$set(echo = TRUE)
 library(mdsr)
 library(RMySQL)
 library(ggplot2)
-library("htmltools")
-library("vembedr")
+library(htmltools)
+library(vembedr)
+library(data.table)
 db <- dbConnect_scidb(dbname = "imdb")
 class(db)
 ```
@@ -45,7 +44,10 @@ ORDER BY t.production_year desc;")
 tv_rank
 ```
 
-Firstly, we wanted to analyze ratings among TV shows with at least 100,000 votes on IMDB. After a first glance, we figured out an interesting pattern that it seemed that all of the TV shows that are shown in our table have multiple production companies. Since our table is too large to confirm our guess by looking through it, we created another table that counts the number of production companies of those TV shows.
+Firstly, we wanted to analyze ratings among TV shows with at least 100,000 votes on IMDB. After a first glance, we figured out an interesting pattern that it seemed that all of the TV shows that are shown in our table have multiple rows with the same TV title, which means that they have multiple production companies. Since our table is too large to confirm our guess by looking through it, we created another table that counts the number of production companies of each of the TV shows.
+
+
+
 
 ```{r warning = FALSE, message = FALSE}
 #TV shows and how many companies were involved in the production in the TV shows with over 100,000 votes
@@ -69,13 +71,13 @@ tv_company
 
 The result, not surprisingly, is consistent with our guess that all of the TV shows with over 100,000 votes are produced by multiple companies. Therefore, we are curious about why a TV show with over 100,000 votes, which indicates that many people have watched that show, gives credits to multiple companies.
 
-We came up with several possible explanations. Essentially, multiple roles are involved in the production of a TV shows. A distributor or a distribution company, for example, promises the network they will guarantee the episode and at times deficit finance the show's and is responsible for marketing the TV shows. In exchange, they own the rights to the show and can monetize it after its initial run. Distributors can be different in different countries, and even be different in the same country but for different platforms. Take *13 Reasons Why* as an example, while Netflix is the distributor of video and on the internet in the US in 2017, Viacom owns the right to all media now. A TV show also gives credit to its IP owner: toys companies such as Mattel and Lego, Comic books companies such as Marvel. As the TV show is collecting loyalties, it needs to give a logo to those companies.
+We came up with several possible explanations. Essentially, multiple roles are involved in the production of a TV shows. A distributor or a distribution company, for example, promises the network they will guarantee the episode and at times deficit finance the show's and is responsible for marketing the TV shows. In exchange, they own the rights to the show and can monetize it after its initial run. Distributors can be different in different countries, and even be different in the same country but for different platforms. Take *13 Reasons Why* as an example, while Netflix is the distributor of video and on the internet in the US in 2017, Viacom owns the right to all media now. A TV show also gives credit to its IP owner: toy companies such as Mattel and Lego, comic book companies such as Marvel as the sceneries of the show are mainly based on their original stories. 
 
 Secondly, companies may choose to collaborate with other firms to minimize risks. As nobody wants to take a huge gamble by himself, instead of making big bets on high-budget franchise plays, production companies collaborate with other companies to lower the risk. A smaller indie production company may have a good idea, but it needs to seek for financial support to put its idea on screen. In this way, the risk of losing is distributed to several companies, and small to median production companies won't worry that a single investment failure will lead to bankrupt.
 
 Another reason for this phenomenon is that many producers, stars, and writers have their studios through which they create and make a show. An example will be Brad Pitt and his production company, Plan-B Entertainment, which won the 86th a best-picture Oscar for *12 Years a Slave*. Those people won't sign on to a show unless their production companies are hired. That's a way to shield some of their payments from taxation, as the money is technically going to the production company, not themselves.
 
-To confirm our guess, we also created a table that counts the number of TV shows that are less popular (have less than 100 votes in IMDB) and the number of production companies that are given credit to.
+To confirm our guess, we also created a table that counts the number of TV shows that are less popular (have less than 100 votes on IMDB) and the number of production companies that are given credit to.
 
 ```{r warning = FALSE, message = FALSE}
 #TV shows and how many companies were involved in the production for shows that are not popular
@@ -96,127 +98,6 @@ tv_lesspop
 The result verifies our idea as most of the TV shows have only 1 or 2 production companies, indicated in the companies column.
 
 ```{r warning = FALSE, message = FALSE}
-
-tv_company %>%
-  ggplot(aes(y = avg_rating, x = companies, color = production_year)) + 
-  geom_jitter() + 
-  scale_colour_gradientn(colours = terrain.colors(10)) + 
-  geom_smooth() + 
-  ggtitle("relationship between the number of shows a company produces and their average rating") + 
-  theme(plot.title = element_text(size = 10)) + 
-  geom_smooth(method = "lm")
-
-tv %>%
-  ggplot(aes(y = avg_rating, x = companies, color = production_year)) + 
-  geom_jitter() + 
-  scale_colour_gradientn(colours = terrain.colors(10)) + 
-  geom_smooth() + 
-  ggtitle("relationship between the number of shows a company produces and their average rating") + 
-  theme(plot.title = element_text(size = 10))
-
-tv %>%
-  mutate(level = ifelse(avg_rating > 7.5, "high", ifelse(avg_rating < 5, "low", "median"))) %>%
-  ggplot(aes(x = companies, fill = level)) + 
-  geom_histogram() + 
-  coord_cartesian(xlim=c(0, 50))
-```
-
-To get a better understanding, we created several graphs to show patterns. For the first graph, we found that for TV shows with more than 100,000 votes in IMDb, at least three companies are involved in the production. Ratings of shows that were produced around 1990 are all above 8.5. One possible reason is that people won't have much motivation to check an old TV show without high quality. 
-
-We made a histogram to interpret the distribution of the number of companies involved in the production of a TV show. We plotted three levels of rating on the graph. Those with more than 7.5 scores are in the level of high, 5-7.5 are in the median, and smaller than 5 are in the low level. We found that large proportion of TV shows are produced by no more than 5 companies. For those with more than 5 companies involved, the proportion of low average rating is relatively small, as companies will be more cautious about selecting scripts and choosing actors. Also music, special effects, and sounds can be improved a lot with more companies involved in, whcih can explain the small proportion of low level of ratings.  
-
-```{r warning = FALSE, message = FALSE}
-#the number of TV shows 30 largest companies produced
-#The movie_id column in movie_info_idx table is indexed based on the indexes of idx_mid
-company_warner <- 
-  db %>%
-  dbGetQuery("SELECT name, count(*) as companies, avg(mi1.info) as avg_votes, avg(mi2.info) as avg_rating
-FROM title t
-JOIN movie_info_idx AS mi1 ON mi1.movie_id = t.id
-JOIN movie_info_idx AS mi2 ON mi2.movie_id = t.id
-JOIN movie_companies as c on c.movie_id = t.id
-JOIN company_name as n on n.id = c.company_id
-WHERE t.kind_id = 2
-  AND mi1.info_type_id = 100
-  AND mi2.info_type_id = 101
-  AND name in ('Warner Home Video', '3 Arts Entertainment', '20th Century Fox Television', '20th Century Fox Television', 'ABC Studios', 'ACME Communications', 'Alloy Entertainment', 'American Movie Classics (AMC)', 'Anonymous Content', 'Bad Robot', 'BBC America', 'Beacon Pictures', 'Bunim-Murray Productions', 'CBS Sports', 'Defined Productions', 'Dick Clark Productions', 'eOne Television', 'Eyeboogie, Inc.', 'Filmation', 'FremantleMedia', 'Global Broadcasting', 'LIN TV Corporation', 'Lions Gate Entertainment', 'Lorimar Television', 'Metro-Goldwyn-Mayer', 'Raycom Media', 'Shine America', 'Sony Pictures Television', '
-Tribune Entertainment', 'Universal Television', 'Walt Disney Television')
-GROUP BY name
-ORDER by avg_rating desc")
-company_warner
-```
-
-However, there are also disadvantages of the way multiple production companies works. One is that the quality of a show may be affected. An independent TV show is usually low in reward, but it’s also low in risk. As a result, the guiding principle is the creation of quality work, with the hope that commercial and critical success will follow. But in the high-stakes game of millions of dollar investment, TV shows with multiple large production companies involved, the principal aim is return on investment, which means playing it as safe as possible (in both what’s made and how it’s executed), appealing to the widest possible audience, and thus protecting everyone’s investment. 
-
-We generated a table of the top 30 television production companies^[data provided: https://www.ranker.com/list/television-production-companies/reference] and the average rating of the TV shows they produced. Eight companies are missed in the table as their names in *imdb* dataset may not match with the name in the list. We figured that the rankings of the best 2 companies (3 Arts Entertainment and 20th Century Fox Television) are all in the middle, indicating that audience may not be satisfied with TV shows produced with the safest way for companies.
-
-
-```{r warning = FALSE, message = FALSE}
-#all the TV shows
-tv_all <- 
-  db %>%
-  dbGetQuery("SELECT distinct t.id, t.title, t.production_year, n.name,
-  mi1.info AS votes, mi2.info AS rating
-FROM title t
-JOIN movie_info_idx AS mi1 ON mi1.movie_id = t.id
-JOIN movie_info_idx AS mi2 ON mi2.movie_id = t.id
-JOIN movie_companies as c on c.movie_id = t.id
-JOIN company_name as n on n.id = c.company_id
-WHERE t.kind_id = 2
-  AND mi1.info_type_id = 100
-  AND mi2.info_type_id = 101
-ORDER BY t.production_year desc;")
-
-tv_all 
-
-```
-
-```{r warning = FALSE, message = FALSE}
-#all companies with the number of TV shows they produced and the average votes and rating
-company_all <- 
-  db %>%
-  dbGetQuery("SELECT name, count(*) as count, avg(mi1.info) as avg_votes, avg(mi2.info) as avg_rating
-FROM title t
-JOIN movie_info_idx AS mi1 ON mi1.movie_id = t.id
-JOIN movie_info_idx AS mi2 ON mi2.movie_id = t.id
-JOIN movie_companies as c on c.movie_id = t.id
-JOIN company_name as n on n.id = c.company_id
-WHERE t.kind_id = 2
-  AND mi1.info_type_id = 100
-  AND mi2.info_type_id = 101  
-GROUP BY name
-ORDER by avg_rating desc")
-company_all
-```
-
-```{r warning = FALSE, message = FALSE}
-ggplot(data=company_all, aes(x=count, y=avg_rating)) +
-  geom_point() + 
-  ggtitle("relationship between the number of shows a company produces and their average rating") + 
-  theme(plot.title = element_text(size = 10))
-
-```
-
-```{r warning = FALSE, message = FALSE}
-#the company that produced the best tv shows and their average rank and votes
-company_count <- 
-  db %>%
-  dbGetQuery("SELECT name, count(*) as number, avg(mi1.info) as avg_votes, avg(mi2.info) as avg_rating
-FROM title t
-JOIN movie_info_idx AS mi1 ON mi1.movie_id = t.id
-JOIN movie_info_idx AS mi2 ON mi2.movie_id = t.id
-JOIN movie_companies as c on c.movie_id = t.id
-JOIN company_name as n on n.id = c.company_id
-WHERE t.kind_id = 2
-  AND mi1.info_type_id = 100
-  AND mi2.info_type_id = 101
-  AND mi1.info > 100000
-GROUP BY name
-ORDER by number desc")
-company_count
-```
-
-```{r warning = FALSE, message = FALSE}
 #TV shows and how many companies were involved in the production for shows that are not popular
 tv <- db %>%
   dbGetQuery("SELECT title, count(distinct name) as companies, avg(mi2.info) as avg_rating, production_year
@@ -227,26 +108,67 @@ JOIN company_name as n on n.id = c.company_id
 WHERE t.kind_id = 2
   AND mi2.info_type_id = 101
 GROUP BY title")
-tv
 ```
 
 ```{r warning = FALSE, message = FALSE}
-#the graph with the number of TV shows a company produced or was involved in the production process, and the average rating it got
 
-company_count %>%
-  ggplot(aes(x = number, y = avg_rating)) + 
-  geom_point() + 
+tv_company %>%
+  ggplot(aes(y = avg_rating, x = companies, color = production_year)) + 
+  geom_jitter() + 
+  scale_colour_gradientn(colours = terrain.colors(10)) + 
   geom_smooth() + 
   ggtitle("relationship between the number of shows a company produces and their average rating") + 
-  theme(plot.title = element_text(size = 10))
+  theme(plot.title = element_text(size = 10)) + 
+  geom_smooth(method = "lm")
 
-company_all %>%
-  ggplot(aes(x = avg_votes, y = avg_rating)) + 
-  geom_point() + 
-  geom_smooth() + 
-  ggtitle("relationship between the average votes of a company on the shows and their average rating") + 
-  theme(plot.title = element_text(size = 10))
+tv_level <- 
+  tv %>%
+  mutate(level = ifelse(avg_rating > 7.5, "high", ifelse(avg_rating < 5, "low", "median")))
+
+tv_level %>%
+  ggplot(aes(x = companies, fill = level)) + 
+  geom_histogram() + 
+  coord_cartesian(xlim=c(0, 50)) + 
+  ggtitle("Number of TV Shows vs Number of Companies Involved with Rating Level")
+
+tv_level %>%
+  filter(companies > 7) %>%
+  ggplot(aes(x = companies, fill = level)) + 
+  geom_histogram() + 
+  coord_cartesian(xlim=c(5, 20)) + 
+  ggtitle("ZoomIn: #TV shows vs #Companies > 7 with Rating Level")
+
+tv_level %>%
+  filter(companies > 15) %>%
+  ggplot(aes(x = companies, fill = level)) + 
+  geom_histogram() + 
+  coord_cartesian(xlim=c(10, 100)) + 
+  ggtitle("ZoomIn: #TV Shows vs #Companies > 15 with Rating Level")
 ```
+
+To get a better understanding, we created several graphs to show patterns. For the first graph, we found that for TV shows with more than 100,000 votes in IMDb, at least three companies are involved in the production. Ratings of shows that were produced around 1990 are all above 8.5. It makes sense because in the old times, there was not so many ways to promote a show. People tried to make the shows with high qualities to get the viewers talk about it and increase the viewing party.
+
+We also made a histogram to interpret the distribution of the number of companies involved in the production of a TV show. We plotted three levels of rating on the graph. Those with more than 7.5 scores are in the level of high, 5-7.5 are in the median, and smaller than 5 are in the low level. We found that over 80 percent of TV shows are produced by no more than 5 companies, but there are also around 10% of them have very low rating. For those with more than 5 companies involved, we can see that the percentage of low rating movies is gradually reduced as the number increases, and becomes unnoticable at the end, as companies will be more cautious about selecting scripts and choosing actors. Also music, special effects, and sounds can be improved a lot with more companies involved in, providing larger budgets.  
+
+```{r warning = FALSE, message = FALSE}
+#the percent of top tv shows
+top <- 
+  tv %>%
+  mutate(rank = ifelse(avg_rating > 9, 1, 0)) %>%
+  group_by(companies) %>%
+  summarise(percent = sum(rank == 1) / n())
+
+top 
+
+top %>%
+  filter(companies < 15) %>%
+  ggplot(aes(x = companies, y = percent)) + 
+  geom_bar(stat = "identity")
+```
+
+However, there are also disadvantages of the way multiple production companies works. 
+To back up this alternative hypothesis, we created a table with a new rank of "top", for tv shows with an average rating greater than 9. From our previous graph, we know that most tv shows have fewer than 10 companies involved. We then calculated the percentage of top tv shows for each possible number of involved companies. It is very clear that the percent of top tv shows produced by the collaborating companies decreases as the number of companies involved increases. The percent of top tv shows produced by a single company is larger than the percent of tv shows produced by multiple companies together.
+One is that the quality of a show may be affected. An independent TV show is usually low in reward, but it’s also low in risk. As a result, the guiding principle is the creation of quality work, with the hope that commercial and critical success will follow. But in the high-stakes game of millions of dollar investment, TV shows with multiple large production companies involved, the principal aim is return on investment, which means playing it as safe as possible (in both what’s made and how it’s executed), appealing to the widest possible audience, and thus protecting everyone’s investment. 
 
 Here is a video^[Youtube video link: https://youtu.be/pK_1ApX_31I] of logos of production companies. See how many you can recognize:
 ```{r}
